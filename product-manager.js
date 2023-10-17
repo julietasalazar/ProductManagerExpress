@@ -1,5 +1,7 @@
 const { log } = require("console");
 const fs = require("fs");
+const express = require("express");
+
 
 class ProductManager {
     constructor(path) {
