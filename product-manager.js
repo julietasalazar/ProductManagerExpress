@@ -2,6 +2,8 @@ const { log } = require("console");
 const fs = require("fs");
 const express = require("express");
 
+const app = express();
+
 
 class ProductManager {
     constructor(path) {
@@ -15,7 +17,7 @@ class ProductManager {
         if (!title || !description || !price || !thumbnail || !stock) {
             throw new Error("Todos los campos son obligatorios");
         }
- 
+
 
         const products = await getJsonFromFile(this.path);
         const newProduct = {
@@ -36,11 +38,21 @@ class ProductManager {
 
     //GETPRODUCTS
     getProducts() {
-        return getJsonFromFile(this.path);
+        app.get("/products", (req, res) => {
+            const {products} = req.params;
+            res.json({products});
+        });
+
+    
     }
 
     //GETPRODUCTBYID
     getProductById() {
+        app.get("/products/:pid", (req, res) => {
+            const {pId} = req.params;
+           products.find((p) => p.code === parseInt(pId));
+           res.json(productId);
+        });
 
     }
 
@@ -98,17 +110,21 @@ async function test() {
 
     const data = {
         title: "Cuaderno",
-        description:"Cuaderno anillado de hojas cuadriculadas",
-        price:2500,
-        thumbnail:"imagen",
-        stock:10,
+        description: "Cuaderno anillado de hojas cuadriculadas",
+        price: 2500,
+        thumbnail: "imagen",
+        stock: 10,
     };
 
-    
+
     await productManager.addProduct(data);
     console.log(await productManager.getProducts());
-    await productManager.updateProduct(2, {price: 4000});
+    await productManager.updateProduct(2, { price: 4000 });
     console.log(await productManager.getProducts());
 }
 
 test();
+
+app.listen(8080, () => {
+    console.log("servidor en puerto 8080");
+});
