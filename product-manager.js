@@ -38,21 +38,34 @@ class ProductManager {
 
     //GETPRODUCTS
     getProducts() {
-        app.get("/products", (req, res) => {
-            const {products} = req.params;
-            res.json({products});
+        app.get("/products/", async (req, res) => {
+            const { products } = req.params;
+            const { limit } = req.query;
+            if (limit) {
+                await res.json(products.slice(0, limit));
+            } else {
+                await res.json({ products });
+            } 
         });
 
-    
+
     }
+
 
     //GETPRODUCTBYID
     getProductById() {
         app.get("/products/:pid", (req, res) => {
-            const {pId} = req.params;
-           products.find((p) => p.code === parseInt(pId));
-           res.json(productId);
+            const { pId } = req.params;
+            const product = products.find((p) => {
+                return p.code === parseInt(pId);
+            });
+            if (!product) {
+                res.json({ error: 'Producto no encontrado.' })
+            } else {
+                res.json(product);
+            }
         });
+
 
     }
 
@@ -85,8 +98,16 @@ class ProductManager {
     }
 
     //DELETEPRODUCT
-    deleteProduct() {
-
+    async deleteProduct(code) {
+        const products = await getJsonFromFile(this.path);
+        const position = products.findIndex((p) => p.id === code);
+        if (position !== -1) {
+            products.splice(position, 1);
+            saveJsonInFile(this.path, products);
+            console.log(`El producto ${code} ha sido eliminado correctamente`);
+        } else {
+            throw new error ('Producto no encontrado');
+        }
     }
 }
 
@@ -101,6 +122,14 @@ const getJsonFromFile = async (path) => {
 const saveJsonInFile = (path, data) => {
     const content = JSON.stringify(data, null, '\t');
     return fs.promises.writeFile(path, content, 'utf-8');
+};
+
+const deleteJsonInFile = (path, data) => {
+    if (!fs.existsSync(path)) {
+        return console.log('Producto no encontrado');
+    }
+     const content = JSON.stringify(data, null, '\t');
+    fs.promises.unlinkSync(path, content, 'utf-8');
 }
 
 
